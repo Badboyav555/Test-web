@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ग्रामीण स्वास्थ्य आपूर्ति नेटवर्क | Rural Health Supply Network</title>
+    <style>
+        :root {
+            --primary: #0d9488; /* Teal */
+            --primary-dark: #0f766e;
+            --accent: #3b82f6; /* Blue */
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #22c55e;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+            font-size: 1.1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .lang-toggle, .net-status, .btn-logout {
+            background: #f1f5f9;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .net-status.online { color: var(--success); }
+        .net-status.offline { color: var(--danger); }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background 0.2s;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover { background-color: var(--primary-dark); }
+        .btn-secondary { background-color: #e2e8f0; color: var(--text); }
+        .btn-danger { background-color: var(--danger); }
+        .btn-large { width: 100%; padding: 1rem; font-size: 1.1rem; }
+
+        /* Landing Page */
+        .hero {
+            text-align: center;
+            padding: 4rem 1rem;
+            background: linear-gradient(135deg, #f0fdfa 0%, #eff6ff 100%);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        .hero h1 { color: var(--primary-dark); margin-bottom: 0.5rem; font-size: 2rem; }
+        .hero p { color: var(--text-light); font-size: 1.1rem; margin-bottom: 2rem; }
+        .auth-buttons { display: flex; gap: 1rem; justify-content: center; }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .feature-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        .feature-card h3 { color: var(--primary-dark); margin-bottom: 0.5rem; }
+
+        /* Auth Forms */
+        .auth-container {
+            max-width: 450px;
+            margin: 3rem auto;
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .form-text { font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem;}
+
+        /* Dashboards */
+        .dashboard-header {
+            margin-bottom: 1.5rem;
+        }
+        .dashboard-header h2 { font-size: 1.5rem; color: var(--text); }
+
+        .card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* ANM Mobile First View */
+        .anm-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem 0;
+            z-index: 100;
+        }
+        .anm-nav button {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+        .anm-nav button.active { color: var(--primary); }
+
+        .anm-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 5rem; /* Space for bottom nav */
+        }
+
+        .stock-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .stock-item:last-child { border-bottom: none; }
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .status-normal { background: #dcfce7; color: #166534; }
+        .status-low { background: #fef9c3; color: #854d0e; }
+        .status-critical { background: #fee2e2; color: #991b1b; }
+
+        /* Officer Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        .stat-card h4 { color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .stat-card .number { font-size: 1.8rem; font-weight: bold; color: var(--text); }
+
+        .map-view {
+            background: #e0f2fe;
+            height: 300px;
+            border-radius: 12px;
+            position: relative;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+        }
+
+        /* Modals & Alerts */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .sync-banner {
+            background: #eff6ff;
+            color: #1e40af;
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        /* Accessibility */
+        [hidden] { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <span id="app-title">Rural Health Supply Network</span>
+        </div>
+        <div class="header-actions">
+            <button class="lang-toggle" onclick="toggleLang()">हिंदी | English</button>
+            <button class="net-status online" id="netStatus" onclick="toggleNetwork()">📡 Online</button>
+            <button class="btn-logout hidden" id="btnLogout" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="sync-banner" id="syncBanner">🔄 Synchronizing data...</div>
+
+    <div id="app-root">
+        <!-- Views will be injected here -->
+    </div>
+
+    <!-- Generic Modal -->
+    <div class="modal-overlay" id="genericModal">
+        <div class="modal">
+            <h3 id="modalTitle"></h3>
+            <p id="modalBody" style="margin: 1rem 0;"></p>
+            <div id="modalContent"></div>
+            <button class="btn btn-secondary" onclick="closeModal()" style="margin-top: 1rem;">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. TRANSLATIONS (i18n)
+        // ==========================================
+        const translations = {
+            en: {
+                app_title: "Rural Health Supply Network",
+                hero_sub: "The right supplies, in the right quantity, delivered to the right healthcare centre at the right time.",
+                login: "Login",
+                signup: "Create Account",
+                problem: "Problem",
+                solution: "Solution",
+                how_it_works: "How It Works",
+                features: "Key Features",
+                mobile_number: "Mobile Number",
+                password: "Password",
+                full_name: "Full Name",
+                confirm_password: "Confirm Password",
+                email_optional: "Email (Optional)",
+                state: "State",
+                district: "District",
+                block: "Block",
+                centre: "Healthcare Centre",
+                user_type: "User Type",
+                submit: "Submit",
+                welcome: "Good Morning",
+                assigned_centre: "Assigned Centre",
+                normal_stock: "Normal Stock",
+                low_stock: "Low Stock",
+                critical_shortage: "Critical Shortage",
+                deliveries: "Deliveries",
+                expiry_alerts: "Expiry Alerts",
+                todays_priorities: "Today's Priorities",
+                stock: "Stock",
+                requests: "Requests",
+                alerts: "Alerts",
+                more: "More",
+                record_usage: "Record Usage",
+                receive_stock: "Receive Stock",
+                request_supplies: "Request Supplies",
+                quantity: "Quantity",
+                reason: "Reason",
+                priority: "Priority",
+                emergency: "Emergency",
+                high: "High",
+                medium: "Medium",
+                routine: "Routine",
+                approve: "Approve",
+                reject: "Reject",
+                total_centres: "Total Centres",
+                critical_centres: "Critical Centres",
+                pending_requests: "Pending Requests",
+                active_deliveries: "Active Deliveries",
+                map_view: "District Map View",
+                offline_mode: "Offline Mode",
+                offline_msg: "Your changes are being saved locally. Data will synchronize automatically when connectivity returns.",
+                sync_complete: "✅ Sync Complete",
+                sync_failed: "⚠️ Sync Failed. Retrying...",
+                something_wrong: "Something went wrong. Please try again.",
+                no_data: "No data available.",
+                logout: "Logout"
+            },
+            hi: {
+                app_title: "ग्रामीण स्वास्थ्य आपूर्ति नेटवर्क",
+                hero_sub: "समय पर सही दवा, सही मात्रा में, सही स्वास्थ्य केन्द्र तक।",
+                login: "लॉगिन",
+                signup: "खाता बनाएँ",
+                problem: "समस्या",
+                solution: "समाधान",
+                how_it_works: "कैसे काम करता है",
+                features: "मुख्य विशेषताएँ",
+                mobile_number: "मोबाइल नंबर",
+                password: "पासवर्ड",
+                full_name: "पूरा नाम",
+                confirm_password: "पासवर्ड की पुष्टि करें",
+                email_optional: "ईमेल (वैकल्पिक)",
+                state: "राज्य",
+                district: "जिला",
+                block: "ब्लॉक",
+                centre: "स्वास्थ्य केन्द्र",
+                user_type: "उपयोगकर्ता प्रकार",
+                submit: "सबमिट",
+                welcome: "नमस्ते",
+                assigned_centre: "निर्धारित केन्द्र",
+                normal_stock: "सामान्य स्टॉक",
+                low_stock: "कम स्टॉक",
+                critical_shortage: "गंभीर कमी",
+                deliveries: "डिलीवरी",
+                expiry_alerts: "समाप्ति चेतावनी",
+                todays_priorities: "आज की प्राथमिकताएँ",
+                stock: "स्टॉक",
+                requests: "अनुरोध",
+                alerts: "अलर्ट",
+                more: "अधिक",
+                record_usage: "उपयोग दर्ज करें",
+                receive_stock: "स्टॉक प्राप्त करें",
+                request_supplies: "सप्लाई का अनुरोध करें",
+                quantity: "मात्रा",
+                reason: "कारण",
+                priority: "प्राथमिकता",
+                emergency: "आपातकाल",
+                high: "उच्च",
+                medium: "मध्यम",
+                routine: "नियमित",
+                approve: "स्वीकृत करें",
+                reject: "अस्वीकृत करें",
+                total_centres: "कुल केन्द्र",
+                critical_centres: "गंभीर केन्द्र",
+                pending_requests: "लंबित अनुरोध",
+                active_deliveries: "सक्रिय डिलीवरी",
+                map_view: "जिला मानचित्र दृश्य",
+                offline_mode: "ऑफलाइन मोड",
+                offline_msg: "आपके बदलाव डिवाइस में सुरक्षित रूप से सहेजे जा रहे हैं। इंटरनेट उपलब्ध होने पर डेटा स्वतः सिंक होगा।",
+                sync_complete: "✅ सिंक पूर्ण",
+                sync_failed: "⚠️ सिंक विफल। पुनः प्रयास कर रहे हैं...",
+                something_wrong: "कुछ समस्या हुई। कृपया दोबारा प्रयास करें।",
+                no_data: "कोई डेटा उपलब्ध नहीं है।",
+                logout: "लॉगआउट"
+            }
+        };
+
+        let currentLang = localStorage.getItem('lang') || 'hi';
+        let isOnline = true;
+        let offlineQueue = JSON.parse(localStorage.getItem('offlineQueue')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+
+        const t = (key) => translations[currentLang][key] || key;
+
+        // ==========================================
+        // 2. MOCK DATABASE (Simulating Supabase/Postgres)
+        // ==========================================
+        const DB = {
+            users: [
+                { id: 'u1', mobile: '9876543210', password: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', name: 'Sunita (ANM)', role: 'ASHA/ANM', centre: 'Sub-Centre Khuri' },
+                { id: 'u2', mobile: '9876543211', password: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', name: 'Rajesh (Officer)', role: 'DISTRICT_OFFICER', centre: 'Jaisalmer District HQ' }
+            ],
+            centres: [
+                { id: 'c1', name: 'Sub-Centre Khuri', block: 'Jaisalmer', district: 'Jaisalmer', risk: 91 },
+                { id: 'c2', name: 'PHC Sam', block: 'Jaisalmer', district: 'Jaisalmer', risk: 48 },
+                { id: 'c3', name: 'CHC Pokhran', block: 'Pokhran', district: 'Jaisalmer', risk: 12 }
+            ],
+            inventory: [
+                { id: 'i1', centre_id: 'c1', item_name: 'Paracetamol', hindi_name: 'पैरासिटामोल', current_stock: 120, min_stock: 50, avg_daily_use: 5, status: 'normal' },
+                { id: 'i2', centre_id: 'c1', item_name: 'ORS', hindi_name: 'ओआरएस', current_stock: 18, min_stock: 50, avg_daily_use: 9, status: 'critical' },
+                { id: 'i3', centre_id: 'c1', item_name: 'Iron Tablets', hindi_name: 'आयरन टैबलेट', current_stock: 45, min_stock: 100, avg_daily_use: 4, status: 'low' }
+            ],
+            requests: [
+                { id: 'r1', centre_id: 'c1', item_name: 'ORS', quantity: 100, priority: 'emergency', status: 'pending', reason: 'Critical stock level' }
+            ],
+            vehicles: [
+                { id: 'v1', number: 'RJ01-1234', status: 'available', capacity: '500kg' },
+                { id: 'v2', number: 'RJ01-5678', status: 'on_delivery', capacity: '1000kg' }
+            ]
+        };
+
+        // SHA-256 Hashing (No salt as per prototype requirement)
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // ==========================================
+        // 3. UI RENDERING & ROUTING
+        // ==========================================
+        const appRoot = document.getElementById('app-root');
+
+        function renderApp() {
+            document.getElementById('app-title').innerText = t('app_title');
+            document.getElementById('btnLogout').classList.toggle('hidden', !currentUser);
+            
+            if (currentUser) {
+                if (currentUser.role === 'ASHA/ANM') renderANMDashboard();
+                else if (currentUser.role === 'DISTRICT_OFFICER') renderOfficerDashboard();
+            } else {
+                renderLandingPage();
+            }
+        }
+
+        function renderLandingPage() {
+            appRoot.innerHTML = `
+                <div class="container">
+                    <div class="hero">
+                        <h1>${t('app_title')}</h1>
+                        <p>${t('hero_sub')}</p>
+                        <div class="auth-buttons">
+                            <button class="btn" onclick="renderLoginPage()">${t('login')}</button>
+                            <button class="btn btn-secondary" onclick="renderSignupPage()">${t('signup')}</button>
+                        </div>
+                    </div>
+
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <h3>${t('problem')}</h3>
+                            <p>Rural centres often run out of essential medicines due to poor visibility and connectivity.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3>${t('solution')}</h3>
+                            <p>Predictive analytics and offline-first architecture ensure stock is replenished before it runs out.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3>${t('how_it_works')}</h3>
+                            <p>Monitor → Predict → Prioritize → Optimize Route → Deliver → Sync</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLoginPage() {
+            appRoot.innerHTML = `
+                <div class="auth-container">
+                    <h2 style="margin-bottom: 1.5rem; text-align:center;">${t('login')}</h2>
+                    <div class="form-group">
+                        <label>${t('mobile_number')}</label>
+                        <input type="tel" id="loginMobile" class="form-control" placeholder="9876543210">
+                    </div>
+                    <div class="form-group">
+                        <label>${t('password')}</label>
+                        <input type="password" id="loginPassword" class="form-control" placeholder="password123">
+                    </div>
+                    <button class="btn btn-large" onclick="handleLogin()">${t('login')}</button>
+                    <p style="text-align:center; margin-top:1rem; cursor:pointer; color:var(--accent);" onclick="renderSignupPage()">${t('signup')}</p>
+                </div>
+            `;
+        }
+
+        async function handleLogin() {
+            const mobile = document.getElementById('loginMobile').value;
+            const password = document.getElementById('loginPassword').value;
+            const hashedPass = await sha256(password);
+
+            const user = DB.users.find(u => u.mobile === mobile && u.password === hashedPass);
+            
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                renderApp();
+            } else {
+                showModal(t('something_wrong'), "Invalid mobile number or password.");
+            }
+        }
+
+        function renderSignupPage() {
+            appRoot.innerHTML = `
+                <div class="auth-container">
+                    <h2 style="margin-bottom: 1.5rem; text-align:center;">${t('signup')}</h2>
+                    <div class="form-group">
+                        <label>${t('full_name')}</label>
+                        <input type="text" class="form-control" placeholder="Sunita Devi">
+                    </div>
+                    <div class="form-group">
+                        <label>${t('mobile_number')}</label>
+                        <input type="tel" class="form-control" placeholder="9876543210">
+                    </div>
+                    <div class="form-group">
+                        <label>${t('password')}</label>
+                        <input type="password" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>${t('confirm_password')}</label>
+                        <input type="password" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>${t('user_type')}</label>
+                        <select class="form-control">
+                            <option>ASHA / ANM / Field Staff</option>
+                            <option>Pharmacist / Store Staff</option>
+                        </select>
+                        <small class="form-text">Officer/Admin roles require admin authorization.</small>
+                    </div>
+                    <button class="btn btn-large" onclick="renderLoginPage()">${t('submit')}</button>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 4. ASHA/ANM DASHBOARD (Mobile First)
+        // ==========================================
+        function renderANMDashboard() {
+            const criticalCount = DB.inventory.filter(i => i.status === 'critical').length;
+            const lowCount = DB.inventory.filter(i => i.status === 'low').length;
+            const normalCount = DB.inventory.filter(i => i.status === 'normal').length;
+
+            appRoot.innerHTML = `
+                <div class="container">
+                    <div class="dashboard-header">
+                        <h2>${t('welcome')}, ${currentUser.name} 👋</h2>
+                        <p style="color:var(--text-light);">${t('assigned_centre')}: ${currentUser.centre}</p>
+                    </div>
+
+                    <div class="anm-grid">
+                        <div class="card" style="background:#dcfce7; color:#166534;">
+                            <h3>🟢 ${normalCount} ${t('normal_stock')}</h3>
+                        </div>
+                        <div class="card" style="background:#fef9c3; color:#854d0e;">
+                            <h3>🟡 ${lowCount} ${t('low_stock')}</h3>
+                        </div>
+                        <div class="card" style="background:#fee2e2; color:#991b1b; cursor:pointer;" onclick="showModal('${t('critical_shortage')}', 'ORS stock is critically low. Estimated stock-out in 2 days.')">
+                            <h3>🔴 ${criticalCount} ${t('critical_shortage')}</h3>
+                        </div>
+
+                        <div class="card">
+                            <h3 style="margin-bottom:1rem;">${t('todays_priorities')}</h3>
+                            <ul style="list-style:none; padding:0;">
+                                <li style="padding:0.5rem 0; border-bottom:1px solid #eee;">🔴 Request ORS Supplies immediately</li>
+                                <li style="padding:0.5rem 0;">🚚 Confirm Delivery #DL-1024</li>
+                            </ul>
+                        </div>
+
+                        <div class="card">
+                            <h3 style="margin-bottom:1rem;">${t('stock')}</h3>
+                            ${DB.inventory.map(item => `
+                                <div class="stock-item">
+                                    <div>
+                                        <strong>${item.item_name}</strong><br>
+                                        <small style="color:var(--text-light);">${item.hindi_name} | ${item.current_stock} / ${item.min_stock} min</small>
+                                    </div>
+                                    <div>
+                                        <span class="status-badge status-${item.status}">${item.status.toUpperCase()}</span>
+                                        <button class="btn btn-secondary" style="margin-left:0.5rem; padding:0.25rem 0.5rem;" onclick="recordUsage('${item.id}')">−</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <button class="btn btn-large" onclick="createRequest()">📝 ${t('request_supplies')}</button>
+                    </div>
+
+                    <nav class="anm-nav">
+                        <button class="active">🏠<br>${t('home')}</button>
+                        <button onclick="alert('Stock View')">📦<br>${t('stock')}</button>
+                        <button onclick="alert('Requests View')">📝<br>${t('requests')}</button>
+                        <button onclick="alert('Deliveries View')">🚚<br>${t('deliveries')}</button>
+                        <button onclick="alert('More View')">⚙️<br>${t('more')}</button>
+                    </nav>
+                </div>
+            `;
+        }
+
+        function recordUsage(itemId) {
+            const item = DB.inventory.find(i => i.id === itemId);
+            if (!item) return;
+
+            showModal(t('record_usage'), `
+                <p>How much ${item.item_name} was used today?</p>
+                <div style="display:flex; justify-content:center; align-items:center; gap:1rem; margin:1.5rem 0;">
+                    <button class="btn btn-secondary" onclick="adjustModalQty(-1)">-</button>
+                    <h2 id="modalQty">10</h2>
+                    <button class="btn btn-secondary" onclick="adjustModalQty(1)">+</button>
+                </div>
+                <button class="btn" onclick="confirmRecordUsage('${itemId}')">${t('submit')}</button>
+            `);
+        }
+
+        let modalQty = 10;
+        function adjustModalQty(delta) {
+            modalQty = Math.max(1, modalQty + delta);
+            document.getElementById('modalQty').innerText = modalQty;
+        }
+
+        function confirmRecordUsage(itemId) {
+            const item = DB.inventory.find(i => i.id === itemId);
+            item.current_stock -= modalQty;
+            
+            // Recalculate status
+            if (item.current_stock <= 0) item.status = 'out';
+            else if (item.current_stock < item.min_stock * 0.5) item.status = 'critical';
+            else if (item.current_stock < item.min_stock) item.status = 'low';
+            else item.status = 'normal';
+
+            const transaction = { type: 'consumption', item_id: itemId, qty: modalQty, centre_id: currentUser.centre_id };
+            
+            if (isOnline) {
+                // Simulate immediate Supabase sync
+                showModal("Success", "Stock updated successfully.");
+            } else {
+                // Simulate Offline IndexedDB storage
+                offlineQueue.push(transaction);
+                localStorage.setItem('offlineQueue', JSON.stringify(offlineQueue));
+                showModal(t('offline_mode'), t('offline_msg'));
+            }
+            closeModal();
+            renderANMDashboard();
+        }
+
+        function createRequest() {
+            showModal(t('request_supplies'), `
+                <div class="form-group" style="text-align:left;">
+                    <label>${t('stock')} Item</label>
+                    <select class="form-control"><option>ORS</option><option>Paracetamol</option></select>
+                </div>
+                <div class="form-group" style="text-align:left;">
+                    <label>${t('quantity')}</label>
+                    <input type="number" class="form-control" value="100">
+                </div>
+                <div class="form-group" style="text-align:left;">
+                    <label>${t('priority')}</label>
+                    <select class="form-control"><option>${t('emergency')}</option><option>${t('high')}</option></select>
+                </div>
+                <button class="btn" onclick="closeModal()">${t('submit')}</button>
+            `);
+        }
+
+        // ==========================================
+        // 5. OFFICER DASHBOARD (District Command Centre)
+        // ==========================================
+        function renderOfficerDashboard() {
+            appRoot.innerHTML = `
+                <div class="container">
+                    <div class="dashboard-header">
+                        <h2>District Command Centre - Jaisalmer</h2>
+                        <p style="color:var(--text-light);">Welcome, ${currentUser.name}</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card" style="border-color:var(--primary)"><h4>${t('total_centres')}</h4><div class="number">42</div></div>
+                        <div class="stat-card" style="border-color:var(--danger)"><h4>${t('critical_centres')}</h4><div class="number">3</div></div>
+                        <div class="stat-card" style="border-color:var(--warning)"><h4>${t('pending_requests')}</h4><div class="number">5</div></div>
+                        <div class="stat-card" style="border-color:var(--accent)"><h4>${t('active_deliveries')}</h4><div class="number">2</div></div>
+                    </div>
+
+                    <div class="card" style="margin-bottom:2rem;">
+                        <h3>${t('todays_priorities')}</h3>
+                        <ul style="margin-top:1rem; list-style:none;">
+                            <li style="padding:0.5rem 0;">🔴 3 centres require immediate replenishment (Sub-Centre Khuri, PHC Sam...)</li>
+                            <li style="padding:0.5rem 0;">🟠 5 requests awaiting approval</li>
+                            <li style="padding:0.5rem 0;">🚚 2 deliveries delayed due to road conditions</li>
+                        </ul>
+                    </div>
+
+                    <div class="card" style="margin-bottom:2rem;">
+                        <h3 style="margin-bottom:1rem;">${t('map_view')} (Simulated)</h3>
+                        <div class="map-view">
+                            <div style="position:absolute; top:20%; left:30%; background:white; padding:5px 10px; border-radius:5px; box-shadow:0 2px 5px rgba(0,0,0,0.1); border-left:4px solid var(--danger);">
+                                <strong>Sub-Centre Khuri</strong><br><small>Risk: 91% 🔴</small>
+                            </div>
+                            <div style="position:absolute; top:60%; left:50%; background:white; padding:5px 10px; border-radius:5px; box-shadow:0 2px 5px rgba(0,0,0,0.1); border-left:4px solid var(--warning);">
+                                <strong>PHC Sam</strong><br><small>Risk: 48% 🟡</small>
+                            </div>
+                            <div style="position:absolute; top:40%; left:70%; background:white; padding:5px 10px; border-radius:5px; box-shadow:0 2px 5px rgba(0,0,0,0.1); border-left:4px solid var(--success);">
+                                <strong>CHC Pokhran</strong><br><small>Risk: 12% 🟢</small>
+                            </div>
+                            <p style="margin-top: 12rem; font-size:0.8rem; color:#666;">* Coordinates are simulated for prototype demo</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="margin-bottom:1rem;">Pending Requests</h3>
+                        <table style="width:100%; border-collapse:collapse;">
+                            <tr style="border-bottom:1px solid #eee;">
+                                <th style="text-align:left; padding:0.5rem;">Centre</th>
+                                <th style="text-align:left; padding:0.5rem;">Item</th>
+                                <th style="text-align:left; padding:0.5rem;">Priority</th>
+                                <th style="text-align:left; padding:0.5rem;">Status</th>
+                                <th style="text-align:left; padding:0.5rem;">Action</th>
+                            </tr>
+                            ${DB.requests.map(r => `
+                                <tr style="border-bottom:1px solid #eee;">
+                                    <td style="padding:0.5rem;">${DB.centres.find(c=>c.id===r.centre_id).name}</td>
+                                    <td style="padding:0.5rem;">${r.item_name}</td>
+                                    <td style="padding:0.5rem;">🔴 ${r.priority}</td>
+                                    <td style="padding:0.5rem;">${r.status}</td>
+                                    <td style="padding:0.5rem;">
+                                        <button class="btn" style="padding:0.25rem 0.5rem; font-size:0.8rem;" onclick="approveRequest('${r.id}')">${t('approve')}</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function approveRequest(id) {
+            const req = DB.requests.find(r => r.id === id);
+            req.status = 'approved';
+            showModal("Approved", "Request approved. Warehouse has been notified to prepare dispatch.");
+            renderOfficerDashboard();
+        }
+
+        // ==========================================
+        // 6. OFFLINE / SYNC ENGINE
+        // ==========================================
+        function toggleNetwork() {
+            isOnline = !isOnline;
+            const btn = document.getElementById('netStatus');
+            
+            if (isOnline) {
+                btn.classList.remove('offline');
+                btn.classList.add('online');
+                btn.innerText = '📡 Online';
+                
+                if (offlineQueue.length > 0) {
+                    document.getElementById('syncBanner').style.display = 'block';
+                    setTimeout(() => {
+                        // Clear queue
+                        localStorage.removeItem('offlineQueue');
+                        offlineQueue = [];
+                        document.getElementById('syncBanner').innerText = t('sync_complete') + " (Pending: 0, Synced: 5)";
+                        setTimeout(() => {
+                            document.getElementById('syncBanner').style.display = 'none';
+                            renderApp(); // Re-render to show updated data
+                        }, 2000);
+                    }, 1500);
+                }
+            } else {
+                btn.classList.remove('online');
+                btn.classList.add('offline');
+                btn.innerText = '📡 Offline';
+                showModal(t('offline_mode'), t('offline_msg'));
+            }
+        }
+
+        // ==========================================
+        // 7. UTILITIES & GLOBAL FUNCTIONS
+        // ==========================================
+        function toggleLang() {
+            currentLang = currentLang === 'en' ? 'hi' : 'en';
+            localStorage.setItem('lang', currentLang);
+            renderApp();
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            renderApp();
+        }
+
+        function showModal(title, body) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalBody').innerHTML = body;
+            document.getElementById('genericModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('genericModal').classList.remove('active');
+        }
+
+        // Initial Render
+        renderApp();
+    </script>
+</body>
+</html>
