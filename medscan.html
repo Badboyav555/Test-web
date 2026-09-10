@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MedScan+ | Smart Medicine Safety & Recovery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ===============================================
+           01. CSS VARIABLES & RESETS
+        =============================================== */
+        :root {
+            --primary: #102A43;
+            --secondary: #159A8C;
+            --bg: #F5F8FA;
+            --card: #FFFFFF;
+            --text-primary: #102A43;
+            --text-secondary: #64748B;
+            --success: #159A8C;
+            --warning: #D89B28;
+            --danger: #D9534F;
+            --border: #E2E8F0;
+            --radius-card: 16px;
+            --radius-btn: 12px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: #E2E8F0;
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* ===============================================
+           02. APP SHELL & LAYOUTS
+        =============================================== */
+        .app-shell {
+            position: relative;
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--bg);
+            min-height: 100vh;
+            padding-bottom: calc(70px + var(--safe-bottom));
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        .gov-shell {
+            position: relative;
+            max-width: 100%;
+            margin: 0 auto;
+            background: #F1F5F9;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .gov-sidebar {
+            width: 240px;
+            background: var(--primary);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        .gov-main {
+            margin-left: 240px;
+            flex: 1;
+            padding: 24px;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .gov-sidebar { transform: translateX(-100%); }
+            .gov-sidebar.open { transform: translateX(0); }
+            .gov-main { margin-left: 0; padding: 16px; }
+        }
+
+        /* ===============================================
+           03. TYPOGRAPHY
+        =============================================== */
+        h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+        h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+        h3 { font-size: 16px; font-weight: 600; }
+        .caption { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+
+        /* ===============================================
+           04. COMPONENTS
+        =============================================== */
+        .header {
+            background: var(--card);
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: var(--radius-btn);
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            min-height: 44px;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:active { background: #0b1f33; }
+        .btn-secondary { background: var(--secondary); color: white; }
+        .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text-primary); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-sm { padding: 8px 12px; font-size: 13px; min-height: 36px; width: auto; }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius-card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-success { background: #E6F4F1; color: var(--success); }
+        .badge-warning { background: #FCF3E0; color: var(--warning); }
+        .badge-danger { background: #FCEBEA; color: var(--danger); }
+        .badge-info { background: #E8F0FE; color: #356AE6; }
+
+        /* ===============================================
+           05. BOTTOM NAVIGATION
+        =============================================== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 calc(8px + var(--safe-bottom));
+            z-index: 60;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 600;
+            flex: 1;
+            padding: 4px;
+        }
+        .nav-item.active { color: var(--secondary); }
+        .nav-item svg { width: 22px; height: 22px; }
+
+        /* ===============================================
+           06. UTILITIES & ANIMATIONS
+        =============================================== */
+        .hidden { display: none !important; }
+        .page { padding: 16px; animation: fadeIn 0.3s ease; }
+        .row { display: flex; align-items: center; }
+        .space-between { justify-content: space-between; }
+        .gap-2 { gap: 8px; }
+        .mt-2 { margin-top: 8px; }
+        .mt-4 { margin-top: 16px; }
+        .mb-4 { margin-bottom: 16px; }
+        .text-center { text-align: center; }
+        .text-secondary { color: var(--text-secondary); }
+        .w-full { width: 100%; }
+        .flex-col { flex-direction: column; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scanLine { 0% { top: 0; } 50% { top: 90%; } 100% { top: 0; } }
+        @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.7; } }
+
+        .toast-container {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            max-width: 440px;
+            padding: 0 16px;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .scanner-overlay {
+            position: relative;
+            width: 100%;
+            height: 240px;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .scanner-frame {
+            width: 80%;
+            height: 80%;
+            border: 2px solid rgba(255,255,255,0.3);
+            position: relative;
+            border-radius: 8px;
+        }
+        .scanner-corner { position: absolute; width: 20px; height: 20px; border-color: var(--secondary); border-style: solid; border-width: 0; }
+        .tl { top: -2px; left: -2px; border-top-width: 4px; border-left-width: 4px; border-top-left-radius: 8px; }
+        .tr { top: -2px; right: -2px; border-top-width: 4px; border-right-width: 4px; border-top-right-radius: 8px; }
+        .bl { bottom: -2px; left: -2px; border-bottom-width: 4px; border-left-width: 4px; border-bottom-left-radius: 8px; }
+        .br { bottom: -2px; right: -2px; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 8px; }
+        .scan-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--secondary);
+            box-shadow: 0 0 10px var(--secondary);
+            animation: scanLine 2s infinite linear;
+        }
+
+        .stepper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+        }
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #E2E8F0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .step.active .step-circle { background: var(--secondary); color: white; }
+        .step-label { font-size: 10px; color: var(--text-secondary); font-weight: 600; }
+        .step-line { height: 2px; flex: 1; background: #E2E8F0; margin: 0 -4px; margin-bottom: 20px; }
+        .step.active + .step-line { background: var(--secondary); }
+
+        /* CSS Map */
+        .css-map {
+            background: #E8F0FE;
+            height: 200px;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background-image: radial-gradient(#cfdcec 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .map-pin {
+            position: absolute;
+            background: var(--danger);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+        .map-pin i { transform: rotate(45deg); }
+        .map-pin.active { background: var(--secondary); z-index: 10; transform: rotate(-45deg) scale(1.2); }
+
+        /* QR Code */
+        .qr-code {
+            width: 140px;
+            height: 140px;
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 1px;
+            margin: 0 auto;
+        }
+        .qr-px { background: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div id="app"></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ==================================================
+   08. DATA LAYER (Static Demo Data)
+================================================== */
+const DB = {
+    user: { name: "Rahul Sharma", location: "Jaipur, Rajasthan" },
+    medicines: [
+        { id: "m1", name: "Metformin", strength: "500 mg", type: "Morning", duration: "30 days", composition: "Metformin Hydrochloride", manufacturer: "Sun Pharma", batch: "SUN2349X", mfg: "Jan 2026", expiry: "Dec 2027", status: "PRESCRIPTION MATCH" },
+        { id: "m2", name: "Amlodipine", strength: "5 mg", type: "Night", duration: "30 days", composition: "Amlodipine Besylate", manufacturer: "Cipla", batch: "CIP9821Y", mfg: "Feb 2026", expiry: "Jan 2028", status: "PRESCRIPTION MATCH" },
+        { id: "m3", name: "Vitamin D3", strength: "60,000 IU", type: "Weekly", duration: "8 weeks", composition: "Cholecalciferol", manufacturer: "Mankind", batch: "MKL4422Z", mfg: "Nov 2025", expiry: "Oct 2027", status: "EXPIRY ALERT", expiryDays: 42 }
+    ],
+    facilities: [
+        { id: "f1", name: "Government PHC", area: "Jaipur Rural", distance: "2.1 km", cost: "FREE", status: "Available", type: "Government", recovery: true, verification: true },
+        { id: "f2", name: "Jan Aushadhi Kendra", area: "Sanganer", distance: "3.5 km", cost: "₹8", status: "Available", type: "Participating Demo", recovery: false, verification: true },
+        { id: "f3", name: "Local Pharmacy", area: "Amer", distance: "0.8 km", cost: "₹42", status: "Available", type: "Nearby", recovery: false, verification: false },
+        { id: "f4", name: "Participating Collection Point", area: "Jaipur", distance: "3.5 km", cost: "FREE", status: "Return Only", type: "Participating Demo", recovery: true, verification: false }
+    ],
+    prescriptions: [
+        { id: "rx1", patient: "Rahul Sharma", date: "12 Nov 2026", meds: [{ name: "Metformin", strength: "500 mg", dose: "As directed", duration: "30 days", confidence: "High" }, { name: "Amlodipine", strength: "5 mg", dose: "Once daily", duration: "30 days", confidence: "High" }] }
+    ],
+    family: [
+        { id: "rahul", name: "Rahul", role: "You", meds: 2 },
+        { id: "father", name: "Father", role: "Parent", meds: 2 },
+        { id: "mother", name: "Mother", role: "Parent", meds: 3 },
+        { id: "child", name: "Child", role: "Son", meds: 1 }
+    ],
+    govStats: {
+        verified: 1284, mismatches: 37, recoveryRequests: 146, eligibleReturns: 91,
+        mismatchAreas: { "Jaipur Rural": 18, "Sanganer": 9, "Amer": 6, "Other": 4 },
+        recoveryTrend: [20, 35, 40, 65, 55, 90, 146],
+        topReturnLocations: [{ name: "PHC Jaipur", count: 45 }, { name: "Sanganer Kendra", count: 28 }, { name: "Amer Hospital", count: 18 }]
+    }
+};
+
+/* ==================================================
+   09. STORAGE LAYER (localStorage)
+================================================== */
+const Storage = {
+    get: (key, fallback) => {
+        try { const data = localStorage.getItem(`medscan_${key}`); return data ? JSON.parse(data) : fallback; }
+        catch(e) { return fallback; }
+    },
+    set: (key, value) => {
+        try { localStorage.setItem(`medscan_${key}`, JSON.stringify(value)); } catch(e) {}
+    }
+};
+
+/* ==================================================
+   10. ROUTER & STATE
+================================================== */
+const Router = {
+    navigate: (path) => {
+        window.location.hash = path;
+    },
+    render: () => {
+        const path = window.location.hash.replace('#', '/') || '/home';
+        const app = document.getElementById('app');
+        
+        // Clear app
+        app.innerHTML = '';
+        
+        // Determine Layout
+        if (path.startsWith('/government')) {
+            app.classList.remove('app-shell');
+            app.classList.add('gov-shell');
+            renderGovLayout(path);
+        } else {
+            app.classList.add('app-shell');
+            app.classList.remove('gov-shell');
+            renderPatientApp(path);
+        }
+        window.scrollTo(0, 0);
+    }
+};
+
+window.addEventListener('hashchange', Router.render);
+
+/* ==================================================
+   11. UI HELPERS
+================================================== */
+function toast(msg, type="success") {
+    const container = document.getElementById('toastContainer');
+    const el = document.createElement('div');
+    el.className = 'toast';
+    if(type === 'danger') el.style.background = 'var(--danger)';
+    if(type === 'warning') el.style.background = 'var(--warning)';
+    el.innerHTML = `<span>${msg}</span>`;
+    container.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 2500);
+}
+
+function generateQR(text) {
+    // Static visual QR representation for demo
+    let html = '';
+    for(let i=0; i<100; i++) {
+        // Pseudo-random pattern based on text length
+        const isOn = (i * text.length + (i%7)) % 3 === 0 || (i%5 === 0);
+        html += `<div class="${isOn ? 'qr-px' : ''}"></div>`;
+    }
+    return `<div class="qr-code">${html}</div>`;
+}
+
+/* ==================================================
+   12. PATIENT APP LAYOUT
+================================================== */
+function renderPatientApp(path) {
+    const app = document.getElementById('app');
+    
+    let content = '';
+    let activeNav = 'home';
+
+    if (path === '/splash') return renderSplash();
+    if (path.startsWith('/find')) { content = renderFind(); activeNav = 'find'; }
+    else if (path.startsWith('/prescription')) { content = renderPrescriptionFlow(path); activeNav = 'home'; }
+    else if (path.startsWith('/verify')) { content = renderVerifyFlow(path); activeNav = 'home'; }
+    else if (path.startsWith('/medicines') || path.startsWith('/schedule')) { content = renderMedicines(path); activeNav = 'meds'; }
+    else if (path.startsWith('/recover')) { content = renderRecoverFlow(path); activeNav = 'recover'; }
+    else if (path.startsWith('/medicine/')) { content = renderMedicineDetails(path.split('/')[2]); activeNav = 'meds'; }
+    else if (path === '/family') { content = renderFamily(); activeNav = 'profile'; }
+    else if (path === '/notifications') { content = renderNotifications(); activeNav = 'profile'; }
+    else if (path === '/about') { content = renderAbout(); activeNav = 'profile'; }
+    else if (path === '/profile') { content = renderProfile(); activeNav = 'profile'; }
+    else { content = renderHome(); activeNav = 'home'; }
+
+    app.innerHTML = `
+        ${content}
+        <nav class="bottom-nav">
+            <a href="#/home" class="nav-item ${activeNav==='home'?'active':''}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Home
+            </a>
+            <a href="#/find" class="nav-item ${activeNav==='find'?'active':''}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Find
+            </a>
+            <a href="#/medicines" class="nav-item ${activeNav==='meds'?'active':''}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.5 20.5L20.5 10.5a4.95 4.95 0 0 0-7-7L3.5 13.5V20.5z"/><line x1="9" y1="11" x2="13" y2="15"/></svg>
+                My Meds
+            </a>
+            <a href="#/recover" class="nav-item ${activeNav==='recover'?'active':''}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                Recover
+            </a>
+            <a href="#/profile" class="nav-item ${activeNav==='profile'?'active':''}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Profile
+            </a>
+        </nav>
+    `;
+}
+
+/* ==================================================
+   13. VIEWS - SPLASH
+================================================== */
+function renderSplash() {
+    setTimeout(() => Router.navigate('/home'), 2200);
+    return `
+        <div style="background: var(--primary); color: white; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; animation: fadeIn 0.5s ease;">
+            <div style="width: 80px; height: 80px; border: 3px solid var(--secondary); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; position: relative; animation: pulse 2s infinite;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2v20M2 12h20"/></svg>
+            </div>
+            <h1 style="font-size: 32px; margin-bottom: 8px;">MedScan+</h1>
+            <p style="opacity: 0.8; font-size: 14px; margin-bottom: 32px;">Smart Medicine Safety & Recovery Platform</p>
+            <p style="font-size: 16px; font-weight: 600; max-width: 280px; line-height: 1.6;">“Verify what you take.<br>Manage how you take it.<br>Recover what you don’t.”</p>
+            <div style="position: absolute; bottom: 40px; font-size: 12px; opacity: 0.5; letter-spacing: 1px;">RAJASTHAN IDEATHON 2026</div>
+        </div>
+    `;
+}
+
+/* ==================================================
+   14. VIEWS - HOME
+================================================== */
+function renderHome() {
+    return `
+        <div class="header">
+            <div>
+                <div class="caption">Good morning,</div>
+                <h2 style="font-size: 18px;">Rahul Sharma</h2>
+                <div class="caption row gap-2" style="margin-top:2px;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    Jaipur, Rajasthan
+                </div>
+            </div>
+            <a href="#/notifications" style="text-decoration:none; color:inherit; position:relative;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <span style="position:absolute; top:0; right:0; width:8px; height:8px; background:var(--danger); border-radius:50%;"></span>
+            </a>
+        </div>
+        <div class="page">
+            <div class="card" style="background: var(--primary); color: white; border:none;">
+                <h3 style="color: var(--secondary); font-size: 12px; letter-spacing: 1px; margin-bottom: 12px;">YOUR MEDICINE JOURNEY</h3>
+                <div class="row space-between">
+                    <div class="step" style="flex:1"><div style="width:24px;height:24px;background:var(--secondary);border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700;">1</div><div style="font-size:10px; margin-top:4px; opacity:0.9">FIND</div></div>
+                    <div style="height:2px; background:rgba(255,255,255,0.2); flex:1; margin:0 -4px; margin-bottom:14px;"></div>
+                    <div class="step" style="flex:1"><div style="width:24px;height:24px;background:var(--secondary);border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700;">2</div><div style="font-size:10px; margin-top:4px; opacity:0.9">VERIFY</div></div>
+                    <div style="height:2px; background:rgba(255,255,255,0.2); flex:1; margin:0 -4px; margin-bottom:14px;"></div>
+                    <div class="step" style="flex:1"><div style="width:24px;height:24px;background:rgba(255,255,255,0.2);border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700;">3</div><div style="font-size:10px; margin-top:4px; opacity:0.7">MANAGE</div></div>
+                    <div style="height:2px; background:rgba(255,255,255,0.2); flex:1; margin:0 -4px; margin-bottom:14px;"></div>
+                    <div class="step" style="flex:1"><div style="width:24px;height:24px;background:rgba(255,255,255,0.2);border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700;">4</div><div style="font-size:10px; margin-top:4px; opacity:0.7">RECOVER</div></div>
+                </div>
+            </div>
+
+            <div class="row gap-2" style="margin-bottom: 12px;">
+                <a href="#/find" class="card" style="flex:1; text-decoration:none; color:inherit; margin:0;">
+                    <div style="background:#E8F0FE; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#356AE6" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </div>
+                    <div style="font-weight:600; font-size:13px;">Find Medicine</div>
+                    <div class="caption" style="font-size:11px;">Search nearby</div>
+                </a>
+                <a href="#/prescription" class="card" style="flex:1; text-decoration:none; color:inherit; margin:0;">
+                    <div style="background:#E6F4F1; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#159A8C" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
+                    </div>
+                    <div style="font-weight:600; font-size:13px;">Scan Rx</div>
+                    <div class="caption" style="font-size:11px;">Create plan</div>
+                </a>
+                <a href="#/verify" class="card" style="flex:1; text-decoration:none; color:inherit; margin:0;">
+                    <div style="background:#FCF3E0; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D89B28" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    </div>
+                    <div style="font-weight:600; font-size:13px;">Verify</div>
+                    <div class="caption" style="font-size:11px;">Check match</div>
+                </a>
+                <a href="#/recover" class="card" style="flex:1; text-decoration:none; color:inherit; margin:0;">
+                    <div style="background:#FCEBEA; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D9534F" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </div>
+                    <div style="font-weight:600; font-size:13px;">Recover</div>
+                    <div class="caption" style="font-size:11px;">Return unused</div>
+                </a>
+            </div>
+
+            <div class="row space-between mb-4">
+                <h3>Today's Schedule</h3>
+                <a href="#/schedule" style="text-decoration:none; color:var(--secondary); font-size:12px; font-weight:600;">View All</a>
+            </div>
+
+            <div class="card" style="border-left: 4px solid var(--success);">
+                <div class="row space-between">
+                    <div>
+                        <div style="font-weight:700; font-size:15px;">Metformin 500 mg</div>
+                        <div class="caption">08:00 AM • Morning</div>
+                    </div>
+                    <div class="badge badge-success">✓ Taken</div>
+                </div>
+            </div>
+
+            <div class="card" style="border-left: 4px solid var(--warning);">
+                <div class="row space-between">
+                    <div>
+                        <div style="font-weight:700; font-size:15px;">Amlodipine 5 mg</div>
+                        <div class="caption">08:00 PM • Upcoming</div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="markTaken(this)">Mark Taken</button>
+                </div>
+            </div>
+
+            <div class="card" style="background: #FCF3E0; border-color: #F5E1B8;">
+                <div class="row gap-2 mb-4">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D89B28" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <h3 style="color: #8a6512;">Expiry Alert</h3>
+                </div>
+                <div style="font-weight:600; margin-bottom:4px;">Vitamin D3</div>
+                <p class="text-secondary" style="font-size:13px; margin-bottom:12px;">Expires in 42 days. Please check storage conditions.</p>
+                <a href="#/medicine/m3" class="btn btn-outline btn-sm" style="width:100%;">View Medicine</a>
+            </div>
+
+            <div class="card" style="background: #E6F4F1; border-color: #B3DCD4;">
+                <div class="row gap-2 mb-4">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#159A8C" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    <h3 style="color: #0b6b5f;">Close The Loop</h3>
+                </div>
+                <p style="font-size:13px; margin-bottom:12px; color: #0b6b5f;">Have unused medicine left after treatment? Check if it's eligible for responsible return.</p>
+                <a href="#/recover" class="btn btn-secondary btn-sm" style="width:100%;">Check Eligibility</a>
+            </div>
+        </div>
+    `;
+}
+
+/* ==================================================
+   15. VIEWS - FIND MEDICINE
+================================================== */
+function renderFind() {
+    const facilities = DB.facilities.map(f => `
+        <div class="card" onclick="openFacilitySheet('${f.id}')" style="cursor:pointer;">
+            <div class="row space-between">
+                <div>
+                    <div class="row gap-2">
+                        <span style="font-weight:700; font-size:15px;">${f.name}</span>
+                        ${f.type === 'Government' ? '<span class="badge badge-info">GOVT</span>' : ''}
+                        ${f.cost === 'FREE' ? '<span class="badge badge-success">FREE</span>' : ''}
+                        ${f.distance === '0.8 km' ? '<span class="badge badge-warning">NEARBY</span>' : ''}
+                    </div>
+                    <div class="caption">${f.area} • ${f.distance}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:700; color: var(--secondary);">${f.cost}</div>
+                    <div class="caption" style="color: var(--success);">${f.status}</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    return `
+        <div class="header">
+            <h2>Find Medicine</h2>
+        </div>
+        <div class="page">
+            <p class="text-secondary mb-4" style="font-size:13px;">Find available sources near you.</p>
+            
+            <div class="card" style="display:flex; padding:8px; margin-bottom:16px; align-items:center;">
+                <svg style="margin-left:8px; color:var(--text-secondary);" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" placeholder="e.g. Metformin 500 mg" style="border:none; outline:none; padding:8px; width:100%; background:transparent; font-family:Inter;" value="Metformin 500 mg" id="searchInput" />
+                <button class="btn btn-outline btn-sm" onclick="Router.navigate('/verify')" style="margin-right:4px;">Scan</button>
+            </div>
+
+            <div class="row gap-2 mb-4">
+                <button class="btn btn-outline btn-sm">Nearest</button>
+                <button class="btn btn-outline btn-sm">Lowest Cost</button>
+                <button class="btn btn-outline btn-sm">Free First</button>
+            </div>
+
+            <div class="card" style="background:#E8F0FE; border-color:#d0e0fd; padding:8px 12px; margin-bottom:16px;">
+                <p style="font-size:12px; color:#356AE6; font-weight:600;">DEMO AVAILABILITY: Availability shown is simulated for this prototype.</p>
+            </div>
+
+            ${facilities}
+        </div>
+        <div id="bottomSheet" class="hidden" style="position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto; background:white; border-radius:24px 24px 0 0; box-shadow:0 -4px 20px rgba(0,0,0,0.1); z-index:100; padding:24px; padding-bottom: calc(24px + var(--safe-bottom));" onclick="closeSheet(event)">
+            <div id="sheetContent"></div>
+        </div>
+    `;
+}
+
+function openFacilitySheet(id) {
+    const f = DB.facilities.find(x => x.id === id);
+    const sheet = document.getElementById('bottomSheet');
+    document.getElementById('sheetContent').innerHTML = `
+        <div style="width:40px; height:4px; background:#E2E8F0; border-radius:2px; margin:0 auto 16px;"></div>
+        <h2>${f.name}</h2>
+        <p class="text-secondary mb-4">${f.area} • ${f.distance}</p>
+        
+        <div class="card mb-4">
+            <div class="row space-between mb-4">
+                <span class="text-secondary">Medicine</span>
+                <span style="font-weight:600;">Metformin 500 mg</span>
+            </div>
+            <div class="row space-between mb-4">
+                <span class="text-secondary">Demo Availability</span>
+                <span style="font-weight:600; color:var(--success);">${f.status}</span>
+            </div>
+            <div class="row space-between">
+                <span class="text-secondary">Cost</span>
+                <span style="font-weight:700; color:var(--primary); font-size:18px;">${f.cost}</span>
+            </div>
+        </div>
+
+        <button class="btn btn-outline mb-4" onclick="toast('Directions: Live navigation is not connected in this offline prototype.')">Get Directions</button>
+        <button class="btn btn-primary" onclick="closeSheet(); Router.navigate('/verify')">View Details</button>
+    `;
+    sheet.classList.remove('hidden');
+}
+
+function closeSheet(e) {
+    if(!e || e.target.id === 'bottomSheet' || e.target.tagName === 'BUTTON') {
+        document.getElementById('bottomSheet').classList.add('hidden');
+    }
+}
+
+/* ==================================================
+   16. VIEWS - PRESCRIPTION FLOW
+================================================== */
+function renderPrescriptionFlow(path) {
+    if (path === '/prescription') {
+        return `
+            <div class="header">
+                <a href="#/home" style="text-decoration:none; color:inherit;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+                <h2>Scan Prescription</h2>
+                <div style="width:24px;"></div>
+            </div>
+            <div class="page">
+                <p class="text-secondary mb-4" style="font-size:13px;">Turn your prescription into a structured medicine plan.</p>
+                
+                <div class="scanner-overlay mb-4">
+                    <div class="scanner-frame">
+                        <div class="scanner-corner tl"></div>
+                        <div class="scanner-corner tr"></div>
+                        <div class="scanner-corner bl"></div>
+                        <div class="scanner-corner br"></div>
+                        <div class="scan-line"></div>
+                    </div>
+                </div>
+                <p class="text-center caption mb-4">Align prescription within frame.</p>
+
+                <div class="row gap-2 mb-4">
+                    <button class="btn btn-outline"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Camera</button>
+                    <button class="btn btn-outline"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload</button>
+                </div>
+
+                <button class="btn btn-secondary" onclick="scanPrescription()">Try Demo Prescription</button>
+            </div>
+        `;
+    }
+    
+    if (path === '/prescription/result') {
+        const rx = DB.prescriptions[0];
+        return `
+            <div class="header">
+                <a href="#/prescription" style="text-decoration:none; color:inherit;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+                <h2>Prescription Found</h2>
+                <div style="width:24px;"></div>
+            </div>
+            <div class="page">
+                <div class="card mb-4">
+                    <div class="row space-between">
+                        <div>
+                            <div class="caption">Patient</div>
+                            <div style="font-weight:700;">${rx.patient}</div>
+                        </div>
+                        <div class="badge badge-success">High Confidence</div>
+                    </div>
+                </div>
+
+                <h3 class="mb-4">Medicines</h3>
+                ${rx.meds.map((m,i) => `
+                    <div class="card">
+                        <div class="row gap-2 mb-4">
+                            <div style="background:var(--bg); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:var(--secondary);">${i+1}</div>
+                            <h3 style="font-size:16px;">${m.name} ${m.strength}</h3>
+                        </div>
+                        <div class="row space-between mb-4">
+                            <div><div class="caption">Dosage</div><div style="font-weight:600; font-size:13px;">${m.dose}</div></div>
+                            <div><div class="caption">Duration</div><div style="font-weight:600; font-size:13px;">${m.duration}</div></div>
+                            <div><div class="caption">Confidence</div><div style="font-weight:600; font-size:13px; color:var(--success);">${m.confidence}</div></div>
+                        </div>
+                    </div>
+                `).join('')}
+
+                <div class="card" style="background:#FCF3E0; border-color:#F5E1B8; padding:12px; margin-top:16px;">
+                    <p style="font-size:12px; color:#8a6512;">Please verify unclear prescription information with a qualified healthcare professional.</p>
+                </div>
+
+                <button class="btn btn-primary mt-4" onclick="createMedPlan()">Create Medicine Plan</button>
+            </div>
+        `;
+    }
+}
+
+function scanPrescription() {
+    toast("Reading prescription...");
+    setTimeout(() => toast("Extracting medicine info..."), 800);
+    setTimeout(() => Router.navigate('/prescription/result'), 1800);
+}
+
+function createMedPlan() {
+    toast("Medicine plan created successfully");
+    setTimeout(() => Router.navigate('/medicines'), 1000);
+}
+
+/* ==================================================
+   17. VIEWS - VERIFY FLOW
+================================================== */
+function renderVerifyFlow(path) {
+    if (path === '/verify' || path === '/verify/match') {
+        const isMatch = path === '/verify/match';
+        return `
+            <div class="header">
+                <a href="#/home" style="text-decoration:none; color:inherit;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+                <h2>Verify Medicine</h2>
+                <div style="width:24px;"></div>
+            </div>
+            <div class="page">
+                <p class="text-secondary mb-4" style="font-size:13px;">Check whether the medicine matches the prescription.</p>
+
+                <div class="stepper">
+                    <div class="step active"><div class="step-circle">1</div><div class="step-label">Prescription</div></div>
+                    <div class="step-line"></div>
+                    <div class="step active"><div class="step-circle">2</div><div class="step-label">Medicine</div></div>
+                    <div class="step-line"></div>
+                    <div class="step ${isMatch ? 'active' : ''}"><div class="step-circle">3</div><div class="step-label">Match</div></div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="caption mb-4">PRESCRIPTION</div>
+                    <div style="font-weight:700; font-size:18px;">Metformin</div>
+                    <div style="font-weight:600; color:var(--text-secondary);">500 mg</div>
+                </div>
+
+                ${!isMatch ? `
+                    <button class="btn btn-secondary mb-4" onclick="Router.navigate('/verify/match')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+                        Scan Medicine Pack
+                    </button>
+                    <button class="btn btn-outline mb-4" onclick="Router.navigate('/verify/mismatch')">Try Mismatch Demo</button>
+                ` : ''}
+
+                ${isMatch ? `
+                    <div class="card mb-4" style="background:#E6F4F1; border-color:#B3DCD4; text-align:center; padding:24px;">
+                        <div style="width:60px; height:60px; background:var(--success); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <h2 style="color:var(--success); margin-bottom:4px;">MATCH</h2>
+                        <p class="text-secondary" style="font-size:13px;">Prescription and scanned medicine match.</p>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="row space-between mb-4">
+                            <span class="text-secondary">Prescription</span>
+                            <span style="font-weight:600;">Metformin 500 mg</span>
+                        </div>
+                        <div class="row space-between">
+                            <span class="text-secondary">Scanned</span>
+                            <span style="font-weight:600;">Metformin 500 mg</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary mb-4" onclick="toast('Added to Medicine Plan'); setTimeout(()=>Router.navigate('/medicines'), 1000)">Add to Medicine Plan</button>
+                    <button class="btn btn-outline" onclick="Router.navigate('/medicine/m1')">View Medicine Details</button>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    if (path === '/verify/mismatch') {
+        return `
+            <div class="header">
+                <a href="#/verify" style="text-decoration:none; color:inherit;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+                <h2>Verify Medicine</h2>
+                <div style="width:24px;"></div>
+            </div>
+            <div class="page">
+                <div class="stepper">
+                    <div class="step active"><div class="step-circle">1</div><div class="step-label">Prescription</div></div>
+                    <div class="step-line"></div>
+                    <div class="step active"><div class="step-circle">2</div><div class="step-label">Medicine</div></div>
+                    <div class="step-line"></div>
+                    <div class="step active"><div class="step-circle" style="background:var(--danger)">3</div><div class="step-label">Mismatch</div></div>
+                </div>
+
+                <div class="card mb-4" style="background:#FCEBEA; border-color:#F5C2C0; text-align:center; padding:24px;">
+                    <div style="width:60px; height:60px; background:var(--danger); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <h2 style="color:var(--danger); margin-bottom:4px;">POSSIBLE MISMATCH</h2>
+                    <p class="text-secondary" style="font-size:13px;">Strength does not match the selected prescription.</p>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="row space-between mb-4">
+                        <span class="text-secondary">Prescription</span>
+                        <span style="font-weight:600;">Metformin 500 mg</span>
+                    </div>
+                    <div class="row space-between">
+                        <span class="text-secondary">Scanned</span>
+                        <span style="font-weight:600; color:var(--danger);">Metformin 250 mg</span>
+                    </div>
+                </div>
+
+                <div class="card" style="background:#FCF3E0; border-color:#F5E1B8;">
+                    <p style="font-size:13px; color:#8a6512; font-weight:600;">Safety Message</p>
+                    <p style="font-size:12px; color:#8a6512; margin-top:4px;">Do not rely on the app alone. Confirm with a pharmacist or qualified healthcare professional before use.</p>
+                </div>
+
+                <button class="btn btn-danger mt-4" onclick="toast('Needs Verification', 'danger')">Verify Before Use</button>
+            </div>
+        `;
+    }
+}
+
+/* ==================================================
+   18. VIEWS - MY MEDICINES & SCHEDULE
+================================================== */
+function renderMedicines(path) {
+    if (path === '/schedule') {
+        const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+        return `
+            <div class="header">
+                <a href="#/home" style="text-decoration:none; color:inherit;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+                <h2>Today's Schedule</h2>
+                <div style="width:24px;"></div>
+            </div>
+            <div class="page">
+                <div class="row gap-2 mb-4">
+                    ${days.map((d,i) => `<div style="flex:1; text-align:center; padding:8px 0; border-radius:8px; ${i===2 ? 'background:var(--primary); color:white;' : 'background:white; border:1px solid var(--border);'}"><div style="font-size:10px; opacity:0.7;">${d}</div><div style="font-weight:700; margin-top:4px;">${15+i}</div></div>`).join('')}
+                </div>
+
+                <h3 class="mb-4">Timeline</h3>
+                
+                <div class="card" style="border-left: 4px solid var(--success);">
+                    <div class="caption">08:00 AM</div>
+                    <div style="font-weight:700; font-size:16px; margin:4px 0;">Metformin 500 mg</div>
+                    <div class="row space-between mt-2">
+                        <span class="badge badge-success">✓ Taken</span>
+                        <button class="btn btn-outline btn-sm">Undo</button>
+                    </div>
+                </div>
+
+                <div class="card" style="border-left: 4px solid var(--warning);">
+                    <div class="caption">08:00 PM</div>
+                    <div style="font-weight:700; font-size:16px; margin:4px 0;">Amlodipine 5 mg</div>
+                    <div class="row space-between mt-2">
+                        <span class="badge badge-warning">Upcoming</span>
+                        <div class="row gap-2">
+                            <button class="btn btn-outline btn-sm" onclick="toast('Snoozed for 15 mins')">Snooze</button>
+                            <button class="btn btn-secondary btn-sm" onclick="markTaken(this)">Mark Taken</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="row space-between mb-4">
+                        <h3>7 Day Overview</h3>
+                        <span class="caption">Demo tracking data</span>
+                    </div>
+                    <div class="row space-between">
+                        ${[1,1,1,1,1,1,0].map(s => `<div style="width:32px; height:32px; border-radius:50%; background:${s?'var(--success)':'var(--border)'}; display:flex; align-items:center; justify-content:center; color:white;">${s?'✓':' '}</div>`).join('')}
+                    </div>
+                    <p class="caption mt-4 text-center">6 / 7 doses recorded</p>
+                </div>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="header">
+            <h2>My Medicines</h2>
+            <button class="btn btn-secondary btn-sm" onclick="toast('Add Medicine flow')">+ Add</button>
+        </div>
+        <div class="page">
+            <div class="row gap-2 mb-4">
+                <div class="card" style="flex:1; margin:0; text-align:center;">
+                    <h2 style="color:var(--secondary);">3</h2>
+                    <div class="caption">Active</div>
+                </div>
+                <div class="card" style="flex:1; margin:0; text-align:center;">
+                    <h2 style="color:var(--warning);">1</h2>
+                    <div class="caption">Expiry Alert</div>
+                </div>
+                <div class="card" style="flex:1; margin:0; text-align:center;">
+                    <h2 style="color:var(--primary);">1</h2>
+                    <div class="caption">Reminder</div>
+                </div>
+            </div>
+
+            ${DB.medicines.map(m => `
+                <a href="#/medicine/${m.id}" class="card" style="text-decoration:none; color:inherit; display:block;">
+                    <div class="row space-between">
+                        <div>
+                            <div style="font-weight:700; font-size:16px;">${m.name} ${m.strength}</div>
+                            <div class="caption">${m.type} • ${m.duration} plan</div>
+                        </div>
+                        <div class="row gap-2">
+                            ${m.status === 'EXPIRY ALERT' ? '<span class="badge badge-warning">EXPIRY</span>' : '<span class="badge badge-success">ACTIVE</span>'}
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                    </div>
+                </a>
+            `).join('')}
+        </div>
+    `;
+}
+
+function renderMedicineDetails(id) {
+    const m = DB.medicines.find(x => x.id === id);
+    if(!m) return '<div class="page">Medicine not found</div>';
+
+    return `
+        <div class="header">
+            <a href="#/medicines" style="text-decoration:none; color:inherit;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+            <h2>Medicine Details</h2>
+            <div style="width:24px;"></div>
+        </div>
+        <div class="page">
+            <div class="card mb-4">
+                <div class="row space-between mb-4">
+                    <div>
+                        <h1 style="font-size:22px; margin-bottom:4px;">${m.name}</h1>
+                        <div style="font-weight:600; color:var(--text-secondary);">${m.strength}</div>
+                    </div>
+                    <span class="badge ${m.status === 'EXPIRY ALERT' ? 'badge-warning' : 'badge-success'}">${m.status}</span>
+                </div>
+                <div style="height:6px; background:#E2E8F0; border-radius:3px; overflow:hidden;">
+                    <div style="width:${m.expiryDays ? '20%' : '80%'}; height:100%; background:${m.expiryDays ? 'var(--warning)' : 'var(--success)'};"></div>
+                </div>
+                <p class="caption mt-2">${m.expiryDays ? `${m.expiryDays} days remaining` : '142 days remaining'}</p>
+            </div>
+
+            <h3 class="mb-4">Medicine Information</h3>
+            <div class="card mb-4">
+                <div class="row space-between mb-4"><span class="text-secondary">Composition</span><span style="font-weight:600;">${m.composition}</span></div>
+                <div class="row space-between mb-4"><span class="text-secondary">Manufacturer</span><span style="font-weight:600;">${m.manufacturer}</span></div>
+                <div class="row space-between mb-4"><span class="text-secondary">Batch Number</span><span style="font-weight:600;">${m.batch}</span></div>
+                <div class="row space-between mb-4"><span class="text-secondary">Mfg Date</span><span style="font-weight:600;">${m.mfg}</span></div>
+                <div class="row space-between"><span class="text-secondary">Expiry Date</span><span style="font-weight:600;">${m.expiry}</span></div>
+            </div>
+
+            <h3 class="mb-4">Safety Information</h3>
+            <div class="card mb-4">
+                <div class="caption mb-4">Storage</div>
+                <p style="font-size:13px; margin-bottom:16px;">Store below 25°C. Protect from moisture and light.</p>
+                <div class="caption mb-4">Precautions</div>
+                <p style="font-size:13px;">Do not crush or chew. Take with food.</p>
+            </div>
+
+            <h3 class="mb-4">Prescription</h3>
+            <div class="card">
+                <div class="row space-between mb-4"><span class="text-secondary">Prescribed Strength</span><span style="font-weight:600;">${m.strength}</span></div>
+                <div class="row space-between mb-4"><span class="text-secondary">Schedule</span><span style="font-weight:600;">${m.type}</span></div>
+                <div class="row space-between"><span class="text-secondary">Duration</span><span style="font-weight:600;">${m.duration}</span></div>
+            </div>
+        </div>
+    `;
+}
+
+/* ==================================================
+   19. VIEWS - RECOVERY FLOW
+================================================== */
+function renderRecoverFlow(path) {
+    if (path === '/recover') {
+        return `
+            <div class="header">
+                <h2>Recover Unused Medicine</h2>
+            </div>
+            <div class="page">
+                <div class="card text-center mb-4" style="background: var(--primary); color:white; border:none; padding:24px;">
+                    <div style="width:60px; height:60px; background:var(--secondary); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    </div>
+                    <h2 style="color:var(--secondary);">CLOSE THE LOOP</h2>
+                    <p style="opacity:0.9; font-size:14px; margin-top:8px;">Have medicine left after treatment?</p>
+                    <p style="opacity:0.7; font-size:12px; margin-top:8px;">Check whether it may be eligible for responsible return.</p>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="row space-between">
+                        <div class="step" style="flex:1"><div class="step-circle" style="background:var(--secondary); color:white;">1</div><div class="step-label">SCAN</div></div>
+                        <div class="step-line"></div>
+                        <div class="step" style="flex:1"><div class="step-circle">2</div><div class="step-label">CHECK</div></div>
+                        <div class="step-line"></div>
+                        <div class="step" style="flex:1"><div class="step-circle">3</div><div class="step-label">RETURN</div></div>
+                        <div class="step-line"></div>
+                        <div class="step" style="flex:1"><div class="step-circle">4</div><div class="step-label">RECORD</div></div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary mb-4" onclick="Router.navigate('/recover/eligibility')">Check Eligibility</button>
+                <button class="btn btn-outline" onclick="Router.navigate('/recover/history')">View Recovery History</button>
+            </div>
+        `;
+    }
+
+    if (path === '/recover/eligibility') {
+        return `
+            <div class="header">
+                <a href="#/recover" style="text-decoration:none; color:inherit;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+                <h2>Eligibility Check</h2>
+                <div style="width:24px;"></div>
+            </div>
+            <div class="page">
+                <div class="card mb-4">
+                    <div class="caption">Medicine</div>
+                    <div style="font-weight:700; font-size:18px;">Metformin 500 mg</div>
+                </div>
+
+                <h3 class="mb-4">Checklist</h3>
+                <div class="card mb-4">
+                    <div class="row space-between mb-4"><span>Packaging sealed</span><span class="badge badge-success">✓ Yes</span></div>
+                    <div class="row space-between mb-4"><span>Batch identifiable</span><span class="badge badge-success">✓ Yes</span></div>
+                    <div class="row space-between mb-4"><span>Expiry sufficiently far</span><span class="badge badge-success">✓ Yes</span></div>
+                    <div class="row space-between mb-4"><span>Medicine identified</span><span class="badge badge-success">✓ Yes</span></div>
+                    <div class="row space-between"><span>Storage condition known</span><span class="badge badge-success">✓ Yes</span></div>
+                </div>
+
+                <div class="card mb-4" style="background:#E6F4F1; border-color:#B3DCD4; text-align:center; padding:16px;">
+                    <h3 style="color:var(--success)">POTENTIALLY ELIGIBLE</h3>
+                    <p class="text-secondary" style="font-size:12px; margin-top:4px;">Final acceptance is determined by the authorized receiving facility.</p>
+                </div>
+
+                <button class="btn btn-primary" onclick="Router.navigate('/recover/points')">Find Return Point</button>
+            </div>
+        `;
+    }
+
+    if (path === '/recover/points') {
+        const points = DB.facilities.filter(f => f.recovery).map(f => `
+            <div class="card" onclick="selectReturnPoint('${f.id}')" style="cursor:pointer; border: 2px solid transparent;">
+                <div class="row space-between">
+                    <div>
+                        <div style="font-weight:700; font-size:15px;">${f.name}</div>
+                        <div class="caption">${f.area} • ${f.distance}</div>
+                    </div>
+                    <div class="badge badge-success">PARTICIPATING</div>
+                </div>
+            </div>
+        `).join('');
+
+        return `
+            <div class="header">
+                <a href="#/recover/eligibility" style="text-decoration:none; color:inherit;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+                <h2>Return Points</h2>
+                <div style="width:24px;"></div>
+            </div>
+            <div class="page">
+                <div class="css-map mb-4">
+                    <div class="map-pin" style="top: 40%; left: 30%;"><i>1</i></div>
+                    <div class="map-pin active" style="top: 60%; left: 50%;"><i>2</i></div>
+                    <div class="map-pin" style="top: 30%; left: 70%;"><i>3</i></div>
+                </div>
+                ${points}
+            </div>
+        `;
+    }
+
+    if (path.startsWith('/recover/confirm')) {
+        const fId = path.split('/')[3] || 'f1';
+        const f = DB.facilities.find(x => x.id === fId) || DB.facilities[0];
+        return `
+            <div class="header">
+                <a href="#/recover/points" style="text-decoration:none; color:inherit;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+                <h2>Confirmation</h2>
+                <div style="width:24px;"></div>
+            </div>
+            <div class="page text-center">
+                <div class="card mb-4">
+                    <h3>${f.name}</h3>
+                    <p class="caption">${f.area}</p>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="caption mb-4">Return ID</div>
+                    <div style="font-weight:800; font-size:20px; letter-spacing:1px; margin-bottom:16px;">MSR-2026-00481</div>
+                    ${generateQR("MSR-2026-00481")}
+                    <p class="caption mt-4">Present this code at the participating facility.</p>
+                </div>
+
+                <div id="confirmSuccess" class="hidden">
+                    <div class="card mb-4" style="background:#E6F4F1; border-color:#B3DCD4;">
+                        <div style="width:50px; height:50px; background:var(--success); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px;">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <h3 style="color:var(--success)">DROP-OFF RECORDED</h3>
+                        <p class="caption mt-2">Status: Received for facility verification</p>
+                    </div>
+                    <div class="card" style="background:#FCF3E0; border-color:#F5E1B8;">
+                        <p style="font-size:12px; color:#8a6512;">Final reuse or disposal decision is made by authorized personnel.</p>
+                    </div>
+                    <button class="btn btn-outline mt-4" onclick="Router.navigate('/home')">Done</button>
+                </div>
+
+                <button id="confirmBtn" class="btn btn-primary" onclick="simulateStaffVerify()">Simulate Staff Verification</button>
+            </div>
+        `;
+    }
+
+    if (path === '/recover/history') {
+        return `
+            <div class="header">
+                <a href="#/recover" style="text-decoration:none; color:inherit;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+                <h2>Recovery History</h2>
+                <div style="width:24px;"></div>
+            </div>
+            <div class="page">
+                <div class="card">
+                    <div class="caption">12 AUG 2026</div>
+                    <div class="row space-between mt-4">
+                        <div>
+                            <div style="font-weight:700;">Metformin 500 mg</div>
+                            <div class="caption">Government PHC - Jaipur</div>
+                        </div>
+                        <span class="badge badge-success">Returned</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="caption">10 JUL 2026</div>
+                    <div class="row space-between mt-4">
+                        <div>
+                            <div style="font-weight:700;">Vitamin D3</div>
+                            <div class="caption">Reason: Packaging condition</div>
+                        </div>
+                        <span class="badge badge-danger">Not Eligible</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function selectReturnPoint(id) {
+    Router.navigate(`/recover/confirm/${id}`);
+}
+
+function simulateStaffVerify() {
+    document.getElementById('confirmBtn').classList.add('hidden');
+    document.getElementById('confirmSuccess').classList.remove('hidden');
+    toast("Drop-off recorded successfully");
+}
+
+/* ==================================================
+   20. VIEWS - PROFILE & OTHERS
+================================================== */
+function renderProfile() {
+    return `
+        <div class="header">
+            <h2>Profile</h2>
+        </div>
+        <div class="page">
+            <div class="card mb-4" style="text-align:center; padding:24px;">
+                <div style="width:80px; height:80px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:white; font-size:24px; font-weight:700;">RS</div>
+                <h2>Rahul Sharma</h2>
+                <p class="caption">Jaipur, Rajasthan</p>
+            </div>
+
+            <div class="card" style="padding:0;">
+                <a href="#/medicines" class="row space-between" style="padding:16px; border-bottom:1px solid var(--border); text-decoration:none; color:inherit;">
+                    <span>My Medicines</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="#/family" class="row space-between" style="padding:16px; border-bottom:1px solid var(--border); text-decoration:none; color:inherit;">
+                    <span>Family Mode</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="#/recover/history" class="row space-between" style="padding:16px; border-bottom:1px solid var(--border); text-decoration:none; color:inherit;">
+                    <span>Recovery History</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="#/notifications" class="row space-between" style="padding:16px; border-bottom:1px solid var(--border); text-decoration:none; color:inherit;">
+                    <span>Notifications</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="#/about" class="row space-between" style="padding:16px; border-bottom:1px solid var(--border); text-decoration:none; color:inherit;">
+                    <span>About MedScan+</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="#/government" class="row space-between" style="padding:16px; text-decoration:none; color:inherit;">
+                    <span style="color:var(--secondary); font-weight:600;">Government Dashboard</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#159A8C" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+            </div>
+            <div class="card" style="background:#E8F0FE; border-color:#d0e0fd; text-align:center; padding:12px; margin-top:16px;">
+                <p style="font-size:12px; color:#356AE6; font-weight:600;">Prototype stores demo information locally on this device.</p>
+            </div>
+        </div>
+    `;
+}
+
+function renderFamily() {
+    return `
+        <div class="header">
+            <a href="#/profile" style="text-decoration:none; color:inherit;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+            <h2>Family Mode</h2>
+            <div style="width:24px;"></div>
+        </div>
+        <div class="page">
+            <p class="text-secondary mb-4" style="font-size:13px;">Keep family medicine schedules organized.</p>
+            ${DB.family.map(f => `
+                <div class="card" onclick="toast('Switched to ${f.name}')" style="cursor:pointer;">
+                    <div class="row space-between">
+                        <div class="row gap-2">
+                            <div style="width:40px; height:40px; background:var(--bg); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--primary);">${f.name[0]}</div>
+                            <div>
+                                <div style="font-weight:700; font-size:15px;">${f.name}</div>
+                                <div class="caption">${f.role}</div>
+                            </div>
+                        </div>
+                        <div class="badge badge-info">${f.meds} MEDS</div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function renderNotifications() {
+    return `
+        <div class="header">
+            <a href="#/home" style="text-decoration:none; color:inherit;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+            <h2>Notifications</h2>
+            <div style="width:24px;"></div>
+        </div>
+        <div class="page">
+            <div class="card" style="border-left:4px solid var(--secondary);">
+                <div class="caption">Just now</div>
+                <div style="font-weight:600; margin-top:4px;">Medicine reminder</div>
+                <p class="text-secondary" style="font-size:13px;">Metformin 500 mg is scheduled for 08:00 AM.</p>
+            </div>
+            <div class="card" style="border-left:4px solid var(--warning);">
+                <div class="caption">2 hours ago</div>
+                <div style="font-weight:600; margin-top:4px;">Expiry alert</div>
+                <p class="text-secondary" style="font-size:13px;">Vitamin D3 expires in 42 days.</p>
+            </div>
+            <div class="card" style="border-left:4px solid var(--success);">
+                <div class="caption">Yesterday</div>
+                <div style="font-weight:600; margin-top:4px;">Recovery reminder</div>
+                <p class="text-secondary" style="font-size:13px;">You may have unused medicine to check.</p>
+            </div>
+        </div>
+    `;
+}
+
+function renderAbout() {
+    return `
+        <div class="header">
+            <a href="#/profile" style="text-decoration:none; color:inherit;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+            <h2>About MedScan+</h2>
+            <div style="width:24px;"></div>
+        </div>
+        <div class="page">
+            <div class="card mb-4">
+                <h3 style="margin-bottom:8px;">What is MedScan+?</h3>
+                <p class="text-secondary" style="font-size:13px;">A prototype connecting Find, Verify, Manage, and Recover stages of the medicine lifecycle.</p>
+            </div>
+            <div class="card mb-4" style="background:#FCEBEA; border-color:#F5C2C0;">
+                <h3 style="margin-bottom:8px; color:var(--danger);">Important Notice</h3>
+                <p style="font-size:13px; color:#9b3530;">MedScan+ does not diagnose illness, prescribe medicines or replace qualified healthcare professionals.</p>
+            </div>
+            <div class="card mb-4" style="background:#E8F0FE; border-color:#d0e0fd;">
+                <h3 style="margin-bottom:8px; color:#356AE6;">Recovery Disclaimer</h3>
+                <p style="font-size:13px; color:#24468a;">Medicine recovery is subject to eligibility checks and authorized facility rules. Prototype data is simulated.</p>
+            </div>
+        </div>
+    `;
+}
+
+/* ==================================================
+   21. GOVERNMENT DASHBOARD LAYOUT
+================================================== */
+function renderGovLayout(path) {
+    const app = document.getElementById('app');
+    let activeNav = 'overview';
+    if(path.includes('safety')) activeNav = 'safety';
+    if(path.includes('recovery')) activeNav = 'recovery';
+    if(path.includes('facilities')) activeNav = 'facilities';
+    if(path.includes('reports')) activeNav = 'reports';
+
+    let content = '';
+    if (path === '/government') content = renderGovOverview();
+    if (path === '/government/safety') content = renderGovSafety();
+    if (path === '/government/recovery') content = renderGovRecovery();
+    if (path === '/government/facilities') content = renderGovFacilities();
+    if (path === '/government/reports') content = renderGovReports();
+
+    app.innerHTML = `
+        <aside class="gov-sidebar" id="govSidebar">
+            <h2 style="color:white; margin-bottom:32px; font-size:18px;">MEDSCAN+ <span style="font-size:10px; opacity:0.7; display:block; font-weight:400;">Gov Dashboard</span></h2>
+            <a href="#/government" class="nav-item ${activeNav==='overview'?'active':''}" style="color:white; text-align:left; margin-bottom:8px; padding:10px; border-radius:8px; ${activeNav==='overview'?'background:rgba(255,255,255,0.1);':''}">Overview</a>
+            <a href="#/government/safety" class="nav-item ${activeNav==='safety'?'active':''}" style="color:white; text-align:left; margin-bottom:8px; padding:10px; border-radius:8px; ${activeNav==='safety'?'background:rgba(255,255,255,0.1);':''}">Safety Analytics</a>
+            <a href="#/government/recovery" class="nav-item ${activeNav==='recovery'?'active':''}" style="color:white; text-align:left; margin-bottom:8px; padding:10px; border-radius:8px; ${activeNav==='recovery'?'background:rgba(255,255,255,0.1);':''}">Recovery Analytics</a>
+            <a href="#/government/facilities" class="nav-item ${activeNav==='facilities'?'active':''}" style="color:white; text-align:left; margin-bottom:8px; padding:10px; border-radius:8px; ${activeNav==='facilities'?'background:rgba(255,255,255,0.1);':''}">Facilities</a>
+            <a href="#/government/reports" class="nav-item ${activeNav==='reports'?'active':''}" style="color:white; text-align:left; margin-bottom:8px; padding:10px; border-radius:8px; ${activeNav==='reports'?'background:rgba(255,255,255,0.1);':''}">Reports</a>
+            <div style="margin-top:auto;">
+                <a href="#/home" class="nav-item" style="color:rgba(255,255,255,0.6); text-align:left; padding:10px;">Exit to Patient App</a>
+            </div>
+        </aside>
+        <main class="gov-main">
+            <div class="row space-between mb-4" style="display:flex;">
+                <button class="btn btn-outline btn-sm" style="display:none;" id="menuBtn" onclick="document.getElementById('govSidebar').classList.toggle('open')">Menu</button>
+                <h1 style="font-size:22px;">Rajasthan Pilot Dashboard</h1>
+                <span class="badge badge-warning">DEMO DATA</span>
+            </div>
+            ${content}
+        </main>
+    `;
+    
+    // Mobile menu toggle logic
+    if(window.innerWidth <= 768) {
+        document.getElementById('menuBtn').style.display = 'flex';
+    }
+}
+
+function renderGovOverview() {
+    return `
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
+            ${kpiCard("Medicines Verified", "1,284")}
+            ${kpiCard("Possible Mismatches", "37", "warning")}
+            ${kpiCard("Recovery Requests", "146")}
+            ${kpiCard("Eligible Returns", "91", "success")}
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:16px;">
+            <div class="card">
+                <h3 class="mb-4">Medicine Safety Overview</h3>
+                <div class="row gap-2 mb-4">
+                    <div style="flex:1; background:#E6F4F1; padding:12px; border-radius:8px;"><div class="caption">Match Rate</div><div style="font-weight:700; color:var(--success); font-size:18px;">94%</div></div>
+                    <div style="flex:1; background:#FCEBEA; padding:12px; border-radius:8px;"><div class="caption">Mismatch Rate</div><div style="font-weight:700; color:var(--danger); font-size:18px;">6%</div></div>
+                </div>
+                <p class="caption">Simulated pilot data.</p>
+            </div>
+            <div class="card">
+                <h3 class="mb-4">Recovery Overview</h3>
+                <div style="height:120px; display:flex; align-items:flex-end; gap:4px; padding:0 4px;">
+                    ${DB.govStats.recoveryTrend.map(t => `<div style="flex:1; background:var(--secondary); height:${(t/150)*100}%; border-radius:4px 4px 0 0; opacity:0.8;"></div>`).join('')}
+                </div>
+                <p class="caption mt-4 text-center">Weekly Recovery Trend</p>
+            </div>
+        </div>
+    `;
+}
+
+function kpiCard(label, value, type="primary") {
+    let color = "var(--primary)";
+    if(type==="warning") color = "var(--warning)";
+    if(type==="success") color = "var(--success)";
+    return `
+        <div class="card" style="margin:0;">
+            <div class="caption">${label}</div>
+            <h1 style="font-size:32px; color:${color}; margin-top:4px;">${value}</h1>
+            <div class="badge badge-info mt-4" style="background:#F1F5F9; color:var(--text-secondary);">DEMO DATA</div>
+        </div>
+    `;
+}
+
+function renderGovSafety() {
+    const areas = DB.govStats.mismatchAreas;
+    const max = Math.max(...Object.values(areas));
+    return `
+        <div class="card mb-4">
+            <h3 class="mb-4">Mismatch Alerts by Area</h3>
+            ${Object.keys(areas).map(a => `
+                <div class="mb-4">
+                    <div class="row space-between mb-4">
+                        <span style="font-weight:600; font-size:13px;">${a}</span>
+                        <span style="font-weight:700; font-size:13px;">${areas[a]}</span>
+                    </div>
+                    <div style="height:8px; background:#E2E8F0; border-radius:4px;">
+                        <div style="width:${(areas[a]/max)*100}%; height:100%; background:var(--danger); border-radius:4px;"></div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px;">
+            <div class="card">
+                <div class="caption">Most Flagged Issue</div>
+                <h2 style="margin:8px 0; color:var(--danger);">Strength Mismatch</h2>
+                <p class="text-secondary" style="font-size:13px;">Simulated pilot data.</p>
+            </div>
+            <div class="card">
+                <div class="caption">Verification Success</div>
+                <h2 style="margin:8px 0; color:var(--success);">94%</h2>
+                <p class="text-secondary" style="font-size:13px;">Simulated pilot data.</p>
+            </div>
+        </div>
+    `;
+}
+
+function renderGovRecovery() {
+    return `
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
+            ${kpiCard("Recovery Requests", "146")}
+            ${kpiCard("Potentially Eligible", "91", "success")}
+            ${kpiCard("Not Eligible", "55", "warning")}
+        </div>
+        <div class="card mb-4">
+            <h3 class="mb-4">Top Recovery Locations</h3>
+            ${DB.govStats.topReturnLocations.map(loc => `
+                <div class="row space-between" style="padding:8px 0; border-bottom:1px solid var(--border);">
+                    <span style="font-size:14px;">${loc.name}</span>
+                    <span style="font-weight:700; font-size:14px;">${loc.count}</span>
+                </div>
+            `).join('')}
+        </div>
+        <div class="card">
+            <p class="caption text-center">SIMULATED PROTOTYPE DATA</p>
+        </div>
+    `;
+}
+
+function renderGovFacilities() {
+    return `
+        <div class="card" style="padding:0; overflow:hidden;">
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; padding:12px; background:#F1F5F9; font-weight:700; font-size:12px; color:var(--text-secondary); text-transform:uppercase;">
+                <span>Facility</span><span>Status</span><span>Verify</span><span>Recover</span>
+            </div>
+            ${DB.facilities.map(f => `
+                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; padding:12px; border-top:1px solid var(--border); align-items:center;">
+                    <span style="font-size:13px; font-weight:600;">${f.name}<br><span style="font-size:11px; color:var(--text-secondary); font-weight:400;">${f.area}</span></span>
+                    <span class="badge badge-info" style="width:fit-content;">${f.type.split(' ')[0]}</span>
+                    <span class="badge ${f.verification ? 'badge-success' : 'badge-warning'}" style="width:fit-content;">${f.verification ? 'Active' : 'Inactive'}</span>
+                    <span class="badge ${f.recovery ? 'badge-success' : 'badge-warning'}" style="width:fit-content;">${f.recovery ? 'Active' : 'Inactive'}</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function renderGovReports() {
+    return `
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px;">
+            <div class="card">
+                <h3>Medicine Verification</h3>
+                <p class="text-secondary mt-4" style="font-size:13px;">Detailed report of scans and mismatches.</p>
+                <button class="btn btn-primary btn-sm mt-4" onclick="toast('Demo report generated')">Generate</button>
+            </div>
+            <div class="card">
+                <h3>Recovery Activity</h3>
+                <p class="text-secondary mt-4" style="font-size:13px;">Summary of eligible vs rejected returns.</p>
+                <button class="btn btn-primary btn-sm mt-4" onclick="toast('Demo report generated')">Generate</button>
+            </div>
+            <div class="card">
+                <h3>Facility Performance</h3>
+                <p class="text-secondary mt-4" style="font-size:13px;">Utilization metrics of pilot centers.</p>
+                <button class="btn btn-primary btn-sm mt-4" onclick="toast('Demo report generated')">Generate</button>
+            </div>
+        </div>
+    `;
+}
+
+/* ==================================================
+   22. INTERACTION HANDLERS
+================================================== */
+function markTaken(btn) {
+    const card = btn.closest('.card');
+    card.style.borderLeftColor = 'var(--success)';
+    btn.outerHTML = '<span class="badge badge-success">✓ Taken</span>';
+    toast("Dose marked as taken");
+}
+
+// Initial route
+if (!window.location.hash) {
+    window.location.hash = '/splash';
+} else {
+    Router.render();
+}
+</script>
+</body>
+</html>
